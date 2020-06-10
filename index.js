@@ -13,3 +13,5 @@ import { AppRegistry } from 'react-native';
 import BasicFlatlist from './components/BasicFlatList';
 
 AppRegistry.registerComponent('TestFood', () => BasicFlatlist);
+
+console.disableYellowBox = true;

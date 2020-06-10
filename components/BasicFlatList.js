@@ -3,13 +3,24 @@ import React, { Component } from 'react';
 import { FlatList, StyleSheet, Text, View, Image, Alert, Platform, TouchableHighlight } from 'react-native';
 import flatListData from '../data/flatListData';
 import Swipeout from 'react-native-swipeout';
+import AddModal from './addModal';
+import EditModal from './editModal';
+import { getFoodFromServer } from '../networking/Server';
 
 class FlatListItem extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            activeRowKey: null
+            activeRowKey: null,
+            numberOfRefresh: 0
         };
+    }
+    refreshFlatListItem = () => {
+        this.setState((prevState) => {
+            return {
+                numberOfRefresh: prevState.numberOfRefresh + 1
+            };
+        });
     }
     render() {
         const swipeSettings = {
@@ -23,6 +34,13 @@ class FlatListItem extends Component {
                 this.setState({ activeRowKey: this.props.item.key });
             },
             right: [
+                {
+                    onPress: () => {
+                        // alert('Update');
+                        this.props.parentFlatList.refs.editModal.showEditModal(flatListData[this.props.index], this)
+                    },
+                    text: 'Edit', type: 'primary'
+                },
                 {
                     onPress: () => {
                         const deletingRow = this.state.activeRowKey;
@@ -99,17 +117,22 @@ export default class BasicFlatList extends Component {
         super(props);
         this.state = ({
             deletedRowKey: null,
+            foodFromServer: [],
         });
+        this._onPressAdd = this._onPressAdd.bind(this);
     }
-    refreshFlatList = (deletedKey) => {
+    refreshFlatList = (activeKey) => {
         this.setState((prevState) => {
             return {
-                deletedRowKey: deletedKey
+                deletedRowKey: activeKey
             };
         });
+        this.refs.scrollToEnd.scrollToEnd();
+        // csroll to end of flatlist when add new food
     }
     _onPressAdd() {
-        alert("You add Item");
+        // alert("You add Item");
+        this.refs.addModal.showAddModal();
     }
     render() {
         return (
@@ -133,6 +156,7 @@ export default class BasicFlatList extends Component {
                     </TouchableHighlight>
                 </View>
                 <FlatList
+                    ref={"scrollToEnd"}
                     data={flatListData}
                     renderItem={({ item, index }) => {
                         //console.log(`Item = ${JSON.stringify(item)}, index = ${index}`);
@@ -143,6 +167,13 @@ export default class BasicFlatList extends Component {
                     }}
                 >
                 </FlatList>
+
+                <AddModal ref={'addModal'} parentFlatList={this}>
+
+                </AddModal>
+                <EditModal ref={'editModal'} parentFlatList={this}>
+
+                </EditModal>
             </View>
         );
     }
